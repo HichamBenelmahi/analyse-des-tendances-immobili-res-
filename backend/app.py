@@ -332,32 +332,38 @@ def load_and_clean_data(filepath, source_type='vente'):
             df[col] = pd.to_numeric(df[col], errors='coerce')
         
         # Suppression des NaNs
-        df = df.dropna(subset=['price', 'surface_m2', 'city'])
+        df_clean = df.dropna(subset=['price', 'surface_m2', 'city'])
+        total_count = len(df_clean)
         
-        # Filtrage des outliers (Valeurs aberrantes)
+        # Filtrage des outliers POUR LES MOYENNES (Copie du DF)
+        df_stats = df_clean.copy()
+        
         if source_type == 'vente':
             # Prix entre 100k et 50M DH
-            df = df[(df['price'] > 100000) & (df['price'] < 50000000)]
+            df_stats = df_stats[(df_stats['price'] > 100000) & (df_stats['price'] < 50000000)]
         else:
             # Loyer entre 500 et 50k DH
-            df = df[(df['price'] > 500) & (df['price'] < 50000)]
+            df_stats = df_stats[(df_stats['price'] > 500) & (df_stats['price'] < 50000)]
             
         # Surface entre 10 et 1000 m²
-        df = df[(df['surface_m2'] > 10) & (df['surface_m2'] < 1000)]
+        df_stats = df_stats[(df_stats['surface_m2'] > 10) & (df_stats['surface_m2'] < 1000)]
         
-        print(f"✅ {source_type.upper()} chargé et nettoyé: {len(df)} annonces")
-        return df
+        print(f"✅ {source_type.upper()} chargé: {total_count} annonces (dont {len(df_stats)} retenues pour stats)")
+        
+        # On retourne le DF nettoyé (sans NaNs) mais avec outliers pour le compte, 
+        # et on attachera les stats calculées sur df_stats
+        return df_clean, df_stats
         
     except Exception as e:
         print(f"❌ Erreur chargement {filepath}: {e}")
-        return None
+        return None, None
 
 try:
     vente_path = os.path.join(DATA_DIR, 'annonces_nettoyees_mubawab.csv')
-    df_vente = load_and_clean_data(vente_path, 'vente')
+    df_vente, df_vente_stats = load_and_clean_data(vente_path, 'vente')
     
     location_path = os.path.join(DATA_DIR, 'location_all_sources.csv')
-    df_location = load_and_clean_data(location_path, 'location')
+    df_location, df_location_stats = load_and_clean_data(location_path, 'location')
     
 except Exception as e:
     print(f"⚠️ Erreur chargement données stats: {e}")
@@ -383,21 +389,21 @@ def stats_summary():
         'cities': []
     }
     
-    if df_vente is not None:
+    if df_vente is not None and df_vente_stats is not None:
         result['vente'] = {
-            'count': int(len(df_vente)),
-            'prix_moyen': float(df_vente['price'].mean()),
-            'prix_m2_moyen': float(df_vente['price'].mean() / df_vente['surface_m2'].mean()) if 'surface_m2' in df_vente.columns else 0,
-            'surface_moyenne': float(df_vente['surface_m2'].mean()) if 'surface_m2' in df_vente.columns else 0
+            'count': int(len(df_vente)), # Total sans NaNs
+            'prix_moyen': float(df_vente_stats['price'].mean()), # Moyenne sur données filtrées
+            'prix_m2_moyen': float(df_vente_stats['price'].mean() / df_vente_stats['surface_m2'].mean()) if 'surface_m2' in df_vente_stats.columns else 0,
+            'surface_moyenne': float(df_vente_stats['surface_m2'].mean()) if 'surface_m2' in df_vente_stats.columns else 0
         }
         result['cities'] = filter_cities(df_vente['city'].dropna().unique().tolist())
     
-    if df_location is not None:
+    if df_location is not None and df_location_stats is not None:
         result['location'] = {
-            'count': int(len(df_location)),
-            'prix_moyen': float(df_location['price'].mean()),
-            'prix_m2_moyen': float(df_location['price'].mean() / df_location['surface_m2'].mean()) if 'surface_m2' in df_location.columns else 0,
-            'surface_moyenne': float(df_location['surface_m2'].mean()) if 'surface_m2' in df_location.columns else 0
+            'count': int(len(df_location)), # Total sans NaNs
+            'prix_moyen': float(df_location_stats['price'].mean()), # Moyenne sur données filtrées
+            'prix_m2_moyen': float(df_location_stats['price'].mean() / df_location_stats['surface_m2'].mean()) if 'surface_m2' in df_location_stats.columns else 0,
+            'surface_moyenne': float(df_location_stats['surface_m2'].mean()) if 'surface_m2' in df_location_stats.columns else 0
         }
         # Combiner les villes (filtrées)
         if df_vente is not None:
