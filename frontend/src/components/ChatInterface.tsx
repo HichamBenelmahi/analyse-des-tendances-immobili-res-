@@ -113,7 +113,6 @@ export default function ChatInterface() {
             type: 'user',
             content,
             timestamp: new Date(),
-            step,
         };
         setMessages((prev) => [...prev, newMessage]);
     };

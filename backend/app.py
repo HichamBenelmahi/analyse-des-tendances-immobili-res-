@@ -4,7 +4,7 @@ API Flask pour la prédiction de prix immobiliers au Maroc
 Supporte deux modèles : Vente et Location
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pickle
 import pandas as pd
@@ -12,7 +12,7 @@ import numpy as np
 from datetime import datetime
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend/out', static_url_path='')
 CORS(app)
 
 # ============================================
@@ -130,7 +130,17 @@ AVAILABLE_DATA = {
 # ============================================
 
 @app.route('/')
-def home():
+def serve_frontend():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/api/info')
+def api_info():
     return jsonify({
         'name': 'API Prédiction Immobilière Maroc',
         'version': '2.0',
