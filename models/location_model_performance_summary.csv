@@ -1,0 +1,2 @@
+model_name,r2_test,rmse_test_dh,mae_test_dh,date_training
+GradientBoosting_Location,0.7617421401621188,5020.860250232147,2695.5481499025723,2026-01-31 01:44:31

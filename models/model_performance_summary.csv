@@ -1,0 +1,2 @@
+model_name,r2_train,r2_validation,r2_test,mae_test,rmse_test,mape_test,date_training,train_samples,val_samples,test_samples,total_features
+Gradient Boosting (Optimisé),0.7204932606439196,0.5840508978606873,0.526382507844687,1515671.1344193346,3268247.0938819963,97.79166747068541,2026-01-31 01:13:47,9767,2093,2093,10
