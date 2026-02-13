@@ -24,12 +24,7 @@ MODEL_DIR = os.path.join(PROJECT_ROOT, 'models')
 
 print(f"📂 Chemin des modèles : {MODEL_DIR}")
 
-# ============================================
-# CHARGEMENT DES MODÈLES
-# ============================================
-print("\n" + "="*60)
-print("🔄 CHARGEMENT DES MODÈLES")
-print("="*60)
+
 
 # Variables globales pour les modèles
 model_vente = None
@@ -57,7 +52,7 @@ try:
     
     # --- MODÈLE LOCATION ---
     print("\n📦 Chargement du modèle LOCATION...")
-    with open(os.path.join(MODEL_DIR, 'location_model.pkl'), 'rb') as f:
+    with open(os.path.join(MODEL_DIR, 'model_Location_final_stacking.pkl'), 'rb') as f:
         model_location = pickle.load(f)
     with open(os.path.join(MODEL_DIR, 'location_target_encoder.pkl'), 'rb') as f:
         target_encoder_location = pickle.load(f)
